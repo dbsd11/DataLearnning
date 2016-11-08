@@ -2,6 +2,7 @@ package hbase
 
 import org.apache.hadoop.hbase.{TableName, HBaseConfiguration}
 import org.apache.hadoop.hbase.client.HBaseAdmin
+import utils.HbaseUtil
 
 /**
  * Created by bdiao on 16/11/3.
@@ -13,6 +14,10 @@ object TestMain{
       var conf = HBaseConfiguration.create()
       var admin:HBaseAdmin = new HBaseAdmin(conf)
       println(admin.getClusterStatus)
-      println(admin.getTableRegions(TableName.valueOf("*")))
+
+      HbaseUtil(admin)
+      HbaseUtil.createTable("testtable",Array[String]("baseinfo","platforminfo"))
+       println(admin.getTableRegions(TableName.valueOf("*")))
+
   }
 }
