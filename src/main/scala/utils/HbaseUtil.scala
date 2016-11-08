@@ -14,6 +14,7 @@ object HbaseUtil {
   def printlnCosumer = new Consumer[Cell]() {
     override def accept(t: Cell): Unit = {
       println(t)
+      println(new String(t.getValue))
     }
   }
 
@@ -58,107 +59,108 @@ object HbaseUtil {
     var get = new Get(rowKey.getBytes())
 
     table.get(get).listCells().forEach(printlnCosumer)
-    def select(tableName: String): Unit = {
-      if (!isTableExist(tableName)) {
-        return
-      }
-      var table = new HTable(TableName.valueOf(tableName), hbase.getConnection)
-      var rs: ResultScanner = null
-      try {
-        rs = table.getScanner(new Scan())
-        rs.forEach(new Consumer[Result] {
-          override def accept(t: Result): Unit = {
-            t.listCells().forEach(printlnCosumer)
-          }
-        })
-      } catch {
-        case e: Exception => e.printStackTrace()
-      } finally {
-        rs.close()
-      }
-    }
+  }
 
-    def selectByStartStop(tableName: String, startRowKey: String, stopRowKey: String): Unit = {
-      if (!isTableExist(tableName)) {
-        return
-      }
-      var table = new HTable(TableName.valueOf(tableName), hbase.getConnection)
-      var scan = new Scan()
-      scan.setStartRow(startRowKey.getBytes())
-      scan.setStopRow(stopRowKey.getBytes())
-      var rs: ResultScanner = null
-      try {
-        rs = table.getScanner(scan)
-        rs.forEach(new Consumer[Result] {
-          override def accept(t: Result): Unit = {
-            t.listCells().forEach(printlnCosumer)
-          }
-        })
-      } catch {
-        case e: Exception => e.printStackTrace()
-      } finally {
-        rs.close()
-      }
+  def select(tableName: String): Unit = {
+    if (!isTableExist(tableName)) {
+      return
     }
-
-    def getByColumn(tableName: String, rowKey: String, familyName: String, columnName: String): Unit = {
-      if (!isTableExist(tableName)) {
-        return
-      }
-      var table = new HTable(TableName.valueOf(tableName), hbase.getConnection)
-      var get = new Get(rowKey.getBytes())
-      get.addColumn(familyName.getBytes(), columnName.getBytes())
-      table.get(get).listCells().forEach(printlnCosumer)
+    var table = new HTable(TableName.valueOf(tableName), hbase.getConnection)
+    var rs: ResultScanner = null
+    try {
+      rs = table.getScanner(new Scan())
+      rs.forEach(new Consumer[Result] {
+        override def accept(t: Result): Unit = {
+          t.listCells().forEach(printlnCosumer)
+        }
+      })
+    } catch {
+      case e: Exception => e.printStackTrace()
+    } finally {
+      rs.close()
     }
+  }
 
-    def getByVersion(tableName: String, rowKey: String, familyName: String, columnName: String): Unit = {
-      if (!isTableExist(tableName)) {
-        return
-      }
-      var table = new HTable(TableName.valueOf(tableName), hbase.getConnection)
-      var get = new Get(rowKey.getBytes())
-      get.addColumn(familyName.getBytes, columnName.getBytes)
-      get.setMaxVersions(5)
-      table.get(get).listCells().forEach(printlnCosumer)
+  def selectByStartStop(tableName: String, startRowKey: String, stopRowKey: String): Unit = {
+    if (!isTableExist(tableName)) {
+      return
     }
-
-    def update(tableName: String, rowKey: String, familyName: String, columnName: String, value: String): Unit = {
-      if (!isTableExist(tableName)) {
-        return
-      }
-      var table = new HTable(TableName.valueOf(tableName), hbase.getConnection)
-      var put = new Put(rowKey.getBytes)
-      put.add(familyName.getBytes, columnName.getBytes, value.getBytes)
-      table.put(put)
+    var table = new HTable(TableName.valueOf(tableName), hbase.getConnection)
+    var scan = new Scan()
+    scan.setStartRow(startRowKey.getBytes())
+    scan.setStopRow(stopRowKey.getBytes())
+    var rs: ResultScanner = null
+    try {
+      rs = table.getScanner(scan)
+      rs.forEach(new Consumer[Result] {
+        override def accept(t: Result): Unit = {
+          t.listCells().forEach(printlnCosumer)
+        }
+      })
+    } catch {
+      case e: Exception => e.printStackTrace()
+    } finally {
+      rs.close()
     }
+  }
 
-    def deleteColumn(tableName: String, rowKey: String, familyName: String, columnName: String): Unit = {
-      if (!isTableExist(tableName)) {
-        return
-      }
-      var table = new HTable(TableName.valueOf(tableName), hbase.getConnection)
-      var delete = new Delete(rowKey.getBytes)
-      if (columnName != null) {
-        delete.addColumn(familyName.getBytes, columnName.getBytes);
-      }
-      table.delete(delete)
+  def getByColumn(tableName: String, rowKey: String, familyName: String, columnName: String): Unit = {
+    if (!isTableExist(tableName)) {
+      return
     }
+    var table = new HTable(TableName.valueOf(tableName), hbase.getConnection)
+    var get = new Get(rowKey.getBytes())
+    get.addColumn(familyName.getBytes(), columnName.getBytes())
+    table.get(get).listCells().forEach(printlnCosumer)
+  }
 
-    def dropTable(tableName: String): Unit = {
-      if (!isTableExist(tableName)) {
-        return
-      }
-      hbase.deleteTable(tableName)
+  def getByVersion(tableName: String, rowKey: String, familyName: String, columnName: String): Unit = {
+    if (!isTableExist(tableName)) {
+      return
     }
+    var table = new HTable(TableName.valueOf(tableName), hbase.getConnection)
+    var get = new Get(rowKey.getBytes())
+    get.addColumn(familyName.getBytes, columnName.getBytes)
+    get.setMaxVersions(5)
+    table.get(get).listCells().forEach(printlnCosumer)
+  }
 
+  def update(tableName: String, rowKey: String, familyName: String, columnName: String, value: String): Unit = {
+    if (!isTableExist(tableName)) {
+      return
+    }
+    var table = new HTable(TableName.valueOf(tableName), hbase.getConnection)
+    var put = new Put(rowKey.getBytes)
+    put.add(familyName.getBytes, columnName.getBytes, value.getBytes)
+    table.put(put)
+  }
+
+  def deleteColumn(tableName: String, rowKey: String, familyName: String, columnName: String): Unit = {
+    if (!isTableExist(tableName)) {
+      return
+    }
+    var table = new HTable(TableName.valueOf(tableName), hbase.getConnection)
+    var delete = new Delete(rowKey.getBytes)
+    if (columnName != null) {
+      delete.addColumn(familyName.getBytes, columnName.getBytes);
+    }
+    table.delete(delete)
+  }
+
+  def dropTable(tableName: String): Unit = {
+    if (!isTableExist(tableName)) {
+      return
+    }
+    hbase.disableTable(tableName)
+    hbase.deleteTable(tableName)
   }
 
   def isTableExist(tableName: String): Boolean = {
     if (hbase.tableExists(tableName)) {
-      println("table exist: " + tableName)
+      println("\n\ttable exist: " + tableName)
       return true;
     } else {
-      println("table not exist: " + tableName)
+      println("\n\ttable not exist: " + tableName)
       return false
     }
   }
