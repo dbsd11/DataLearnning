@@ -52,7 +52,7 @@ class FileDeparter {
 
   private def doDepart(): Unit = {
 
-    var offset = ((dataFile.length + dist - 1) / dist).toInt
+    var offset = (dataFile.length + dist - 1) / dist
 
     for (i <- 1 to dist) {
       threadPool.execute(new Runnable {

@@ -42,7 +42,7 @@ object BigDataRankTest {
     dataFile.createFile();
     val random = new Random(System.nanoTime());
     val writer = dataFile.writer(true, Codec.apply("utf-8"));
-    for (i <- 1 to 100000) {
+    for (i <- 1 to 10000000) {
       writer.write(String.valueOf(random.nextInt()) + "\n")
     }
     writer.flush()
